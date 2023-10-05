@@ -1,16 +1,28 @@
 from app.ozon.ozon import Ozon
+from app.db.db import DB
 
 import logging
+import requests
+import json
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-parser = Ozon()
 
-parser.init_parser()
+def main():
+    parser = Ozon("products")
 
-parser.parse_category("https://www.ozon.ru/category/aksessuary-dlya-telefonov-15511/")
+    db = DB()
 
-parser.get_category_items()
+    categories = db.select(table_name="categories")
 
-parser.get_products_html()
+    for category in categories:
+        logging.info(f"Parsing category: {category[1]}")
+
+        parser.parse_category(category[2])
+        parser.get_products_info()
+        parser.save_products(category_id=category[0])
+
+
+if __name__ == '__main__':
+    main()

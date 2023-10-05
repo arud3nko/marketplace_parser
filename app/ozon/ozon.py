@@ -7,17 +7,56 @@ from app.parser.parser import Parser
 from bs4 import BeautifulSoup
 
 
+def trigger(soup):
+    check = soup.find("div", {"id": "paginatorContent"}).find('a').parent
+    el = check if len(check.get("class")) > 1 else check.parent
+    return f"{'.'.join(el.get('class'))}:last-child"
+
+
 class Ozon(Parser):
-    def __init__(self):
+    def __init__(self, table_name):
         super().__init__("ozon")
+        self.table_name = table_name
 
     def parse_category(self, url: str):
         super().get_category_pages(url=url,
                                    start=1,
-                                   end=3,
-                                   pages_lambda=lambda x: x*3 + 1)
+                                   end=1,
+                                   trigger=trigger,
+                                   # pages_lambda=lambda x: x*3 + 1)
+                                   pages_lambda=lambda x: x+1)
+
+    def get_products_info(self):
+        for page in os.listdir(f"./app/parseData/ozon/pages/{self._uuid}"):
+            with open(f"./app/parseData/ozon/pages/{self._uuid}/{page}", "r") as file:
+                src = file.read()
+
+            soup = BeautifulSoup(src, 'lxml')
+
+            items = soup.find_all("div", {"class": f"{self.trigger.split(':')[0].replace('.', ' ')}"})
+
+            for product in items:
+                title = product.find_all("a")[1]
+                link = "https://ozon.ru" + title.get("href").split('/?')[0]
+                vendor_code = link.split('-')[-1].replace('/', '') if '-' in link else link.split('/')[-1]
+                image_link = product.find("img").get("src")
+
+                price_discount = product.find("span", {"class": "tsHeadline500Medium"}).text.replace('\u2009', ' ')\
+                    .replace(' ', '').replace('₽', '')
+                price = product.find("span", {"class": "tsBodyControl400Small"}).text.replace('\u2009', ' ') \
+                    .replace(' ', '').replace('₽', '')
+
+                self.products.append({
+                    "title": title.text,
+                    "price": int(price) if price != '' else price_discount,
+                    "price_discount": int(price_discount),
+                    "vendor_code": vendor_code,
+                    "link": link,
+                    "image_link": image_link
+                })
 
     def get_category_items(self):
+        # DEPRECATED
         products = {}
         for page in os.listdir(f"./app/parseData/ozon/pages/{self._uuid}"):
             with open(f"./app/parseData/ozon/pages/{self._uuid}/{page}", "r") as file:
