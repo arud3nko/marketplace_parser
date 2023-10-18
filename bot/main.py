@@ -9,7 +9,7 @@ from aiogram.enums.update_type import UpdateType
 
 from app.bot.bot import bot
 from app.handlers.admin_ads import admin_check_handler
-from app.handlers import post
+from app.handlers import post, admin, any
 from app.config.config import BASE_WEBHOOK_URL
 
 
@@ -30,8 +30,11 @@ async def on_startup(bot: Bot) -> None:
 
 def main() -> None:
     dp = Dispatcher()
+
     dp.include_routers(router,
-                       post.router)
+                       post.router,
+                       admin.router,
+                       any.router)
 
     dp.startup.register(on_startup)
 

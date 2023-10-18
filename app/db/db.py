@@ -106,7 +106,7 @@ class DB:
                 charset='utf8'
             )
             if self.connection.is_connected():
-                logging.info(f"Successfully connected to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
+                # logging.info(f"Successfully connected to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
                 return self.connection
         except Error as err:
             logging.error(f"Error while connecting to {DB_USERNAME}@{DB_HOST}:{DB_PORT} | {err}")
@@ -115,7 +115,7 @@ class DB:
     def __disconnect(self) -> None:
         if self.connection.is_connected():
             self.connection.close()
-            logging.info(f"Successfully closed connection to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
+            # logging.info(f"Successfully closed connection to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
 
     def __execute_query(self, query: str) -> Any:
         try:
@@ -124,7 +124,7 @@ class DB:
             cursor.execute(query)
             result = cursor.fetchall()
             self.connection.commit()
-            logging.info(f"Successfully executed query to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
+            # logging.info(f"Successfully executed query to {DB_USERNAME}@{DB_HOST}:{DB_PORT}")
             return result
         except Error as err:
             logging.error(f"Error while executing query to {DB_USERNAME}@{DB_HOST}:{DB_PORT} | {err}")

@@ -1,5 +1,5 @@
 import json
-import time
+import random
 import os
 import logging
 
@@ -19,12 +19,14 @@ class Ozon(Parser):
         self.table_name = table_name
 
     def parse_category(self, url: str):
+        uri = random.randint(1, 10)
         super().get_category_pages(url=url,
-                                   start=1,
-                                   end=1,
+                                   start=uri,
+                                   end=uri,
                                    trigger=trigger,
                                    # pages_lambda=lambda x: x*3 + 1)
                                    pages_lambda=lambda x: x+1)
+        self.get_products_info()
 
     def get_products_info(self):
         for page in os.listdir(f"./app/parseData/ozon/pages/{self._uuid}"):
@@ -54,6 +56,8 @@ class Ozon(Parser):
                     "link": link,
                     "image_link": image_link
                 })
+
+        super().check_if_product_exists()
 
     def get_category_items(self):
         # DEPRECATED

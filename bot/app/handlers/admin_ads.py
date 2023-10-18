@@ -1,12 +1,9 @@
-import json
-
 from app.bot.bot import bot
 from app.keyboards.keyboards import build_kb_send_to_channel
 
 from typing import Any
 from aiohttp import web
 
-from aiogram.types import InputFile
 from aiogram.enums import ParseMode
 
 
@@ -28,6 +25,12 @@ def format_message(data: Any):
 
 
 async def format_dict(json_request: Any) -> dict:
+    """
+    Форматируем запрос из вебхуков в словарь
+    :param json_request:
+    :return:
+    """
+
     data = {
         'product_id': json_request['product_id'],
         'admin_chat_id': json_request['admin_chat_id'],
@@ -45,8 +48,13 @@ async def format_dict(json_request: Any) -> dict:
 
 
 async def admin_check_handler(request):
-    json_data = await request.json()
+    """
+    Отправляем запрос из вебхуков на проверку администратору канала
+    :param request:
+    :return: ОК
+    """
 
+    json_data = await request.json()
     data = await format_dict(json_data)
 
     message = format_message(data)

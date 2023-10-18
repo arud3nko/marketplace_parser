@@ -2,20 +2,22 @@ import logging
 
 from aiogram import Router, types, F
 from aiogram.enums import ParseMode
-from aiogram.exceptions import TelegramBadRequest
 
 from aiohttp import web
 
 from app.db.db import DB
 from app.bot.bot import bot
 
-from contextlib import suppress
-
 router = Router()
 
 
 @router.callback_query(F.data.startswith("send_to_channel::"))
 async def send_to_channel_query(callback: types.CallbackQuery):
+    """
+    Отправка товара в канал
+    :param callback:
+    :return:
+    """
     product_id = int(callback.data.split("::")[1])
 
     db = DB()
@@ -32,17 +34,26 @@ async def send_to_channel_query(callback: types.CallbackQuery):
 
     message = f"""*{title}*
 
-📌 *{price_discount} ₽* \| ~{price} ₽~
+📌 *{price_discount} ₽* | ~{price} ₽~
 
 Код товара: {vendor_code}
 
 Смотреть на [OZON]({link})
 
-❤️ \- Супер
-👍🏻 \- Пойдёт
-😐 \- Не очень
-💵 \- Дороговато
-""".replace('.', '\.')
+❤️ - Супер
+👍🏻 - Пойдёт
+😐 - Не очень
+💵 - Дороговато
+
+#{str(category[0][1]).replace(' ', '_').lower()}
+"""
+
+    message = message.replace('.', '\.')\
+                     .replace('|', '\|')\
+                     .replace('-', '\-')\
+                     .replace('#', '\#')\
+                     .replace('_', '\_')\
+                     .replace('!', '\!')
 
     await bot.send_photo(chat_id=category[0][-1],
                          photo=image_link,
@@ -52,11 +63,18 @@ async def send_to_channel_query(callback: types.CallbackQuery):
 
     await callback.message.delete()
 
+    logging.info(f"Sent post to channel {category[0][-1]} | Product ID {product_id}")
+
     return web.Response(status=200)
 
 
 @router.callback_query(F.data.startswith("drop_post::"))
-async def send_to_channel_query(callback: types.CallbackQuery):
+async def drop_post(callback: types.CallbackQuery):
+    """
+    Удаление товара из админ-чата
+    :param callback:
+    :return:
+    """
     product_id = int(callback.data.split("::")[1])
 
     db = DB()
@@ -66,8 +84,3 @@ async def send_to_channel_query(callback: types.CallbackQuery):
                     where_value=product_id)
 
     await callback.message.delete()
-
-
-@router.message()
-async def skip_any_messages(message: types.Message):
-    return web.Response(status=401)
